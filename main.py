@@ -129,7 +129,7 @@ def text_to_speech(text, lang='en'):
 
 @app.route('/')
 def index():
-    return render_template('index.html', languages=LANGUAGES)
+    return render_template('landingpage.html', languages=LANGUAGES)
 
 @app.route('/ask', methods=['POST'])
 def ask():
