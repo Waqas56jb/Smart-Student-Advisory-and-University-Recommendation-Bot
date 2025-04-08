@@ -148,7 +148,7 @@ def text_to_speech(text, lang='en'):
 # Routes
 @app.route('/')
 def home():
-    return render_template('index.html', languages=LANGUAGES)
+    return render_template('landingpage.html', languages=LANGUAGES)
 
 @app.route('/ask', methods=['POST'])
 def ask_question():
@@ -215,6 +215,10 @@ def download_file(filename):
 @app.route('/signup', methods=['GET'])
 def signup_page():
     return render_template('signup.html')
+
+@app.route('/index', methods=['GET'])
+def index_page():
+    return render_template('index.html')
 
 @app.route('/signup', methods=['POST'])
 def signup():
