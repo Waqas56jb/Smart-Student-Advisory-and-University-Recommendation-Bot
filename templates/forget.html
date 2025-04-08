@@ -61,10 +61,10 @@
     <h2>Forget Password</h2>
     <form id="forgetForm">
       <input type="email" id="email" placeholder="Email" required>
-      <button type="submit">Get Reset Token</button>
+      <button type="submit">Verify Email</button>
     </form>
     <form id="resetForm">
-      <input type="text" id="token" placeholder="Reset Token" required>
+      <input type="hidden" id="verifiedEmail">
       <input type="password" id="newPassword" placeholder="New Password" required>
       <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
       <button type="submit">Reset Password</button>
@@ -76,21 +76,22 @@
   <script>
     const forgetForm = document.getElementById('forgetForm');
     const resetForm = document.getElementById('resetForm');
-    let token = '';
+    const verifiedEmail = document.getElementById('verifiedEmail');
 
     forgetForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
 
-      const response = await fetch('/forget-password', {
+      const response = await fetch('/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
       const data = await response.json();
       document.getElementById('message').textContent = data.message;
-      if (data.token) {
-        token = data.token;
+      
+      if (response.status === 200) {
+        verifiedEmail.value = email;
         forgetForm.style.display = 'none';
         resetForm.style.display = 'block';
       }
@@ -98,16 +99,22 @@
 
     resetForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const email = verifiedEmail.value;
       const newPassword = document.getElementById('newPassword').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
 
       const response = await fetch('/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, newPassword, confirmPassword })
+        body: JSON.stringify({ email, newPassword, confirmPassword })
       });
       const data = await response.json();
       document.getElementById('message').textContent = data.message;
+      if (response.status === 200) {
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+      }
     });
   </script>
 </body>

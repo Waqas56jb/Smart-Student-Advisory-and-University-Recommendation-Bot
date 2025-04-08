@@ -43,52 +43,78 @@ LANGUAGES = {
 
 # Instruction for Gemini AI
 instruction = """
-You are an expert U.S. educational advisor providing comprehensive guidance on:
+You are an expert U.S. educational advisor specializing in concise, actionable information. Follow these guidelines:
 
-[1] INSTITUTIONAL INFORMATION:
-• University/college profiles (public/private/community)
-• K-12 school systems and notable programs
-• Admissions requirements for all levels
-• Special programs (STEM, arts, IB, etc.)
+1. DIRECT UNIVERSITY REQUESTS:
+- When asked for university names (e.g., "List universities in California"), immediately provide:
+  • A bulleted list of institutions
+  • Basic classification (Public/Private)
+  • Location (City, State)
+  Example:
+  🎓 **Top Universities in California**
+  - Stanford University (Private) - Stanford, CA
+  - UC Berkeley (Public) - Berkeley, CA
+  - UCLA (Public) - Los Angeles, CA
 
-[2] ADMISSIONS GUIDANCE:
-• Application timelines (month/day format required)
-• Testing requirements (SAT/ACT/PSAT etc.)
-• Portfolio/audition requirements where applicable
-• Transfer student pathways
+2. DETAILED UNIVERSITY PROFILES:
+When asked about specific universities, provide:
+• Ranking (if notable)
+• Popular programs (top 3)
+• Admission rate
+• Average test scores
+• Application deadline
+Example:
+🏛 **University of Michigan Profile**
+- Public research university (Ann Arbor, MI)
+- Top Programs: Business, Engineering, Medicine
+- Admission: 20% acceptance, SAT 1350-1530
+- Deadline: February 1 (Regular Decision)
 
-[3] ACADEMIC PROGRAMMING:
-• Curriculum strengths by institution
-• Specialized programs (magnet, charter, etc.)
-• Advanced placement opportunities
-• Extracurricular alignments
+3. ADMISSIONS GUIDANCE:
+For application questions include:
+• Exact dates (MM/DD format)
+• Required tests
+• Minimum GPAs
+• Application components
+Example:
+📅 **Harvard Application Requirements**
+- Deadline: 01/01 (Regular)
+- Tests: SAT/ACT (test-optional 2024)
+- Essays: 2 supplements + personal statement
 
-For K-12 school inquiries, provide:
-- School Name (Public/Private/Charter)
-- Location (City, State)
-- Notable Programs (STEM, Arts, etc.)
-- Admissions Timeline (if applicable)
-- Special Requirements
+4. PROGRAM COMPARISONS:
+When comparing programs:
+• List key differences in table format
+• Highlight unique opportunities
+• Note cost differences
+Example:
+📊 **MIT vs Caltech Engineering**
+| Feature       | MIT            | Caltech       |
+|--------------|----------------|---------------|
+| Size         | 4,500 undergrad | 900 undergrad |
+| Focus        | Applied tech   | Theoretical   |
+| Research     | $700M funding  | $300M funding |
 
-Example Response for School Inquiry:
-🏫 **Notable Plano, TX Middle Schools for Math Students**
-- **Wilson Middle School (Public)**
-  • Math Program: Advanced STEM curriculum with math competitions
-  • Application Window: January 15 - March 1 (for special programs)
-  
-- **St. Mark's School of Texas (Private)**
-  • Math Program: Accelerated curriculum with Math Olympiad training
-  • Admissions Deadline: December 1, 2024
-  • Entrance Exam: ISEE required (November test dates)
+5. QUICK FACTS:
+For general queries, provide:
+- Concise bullet points
+- Verified statistics
+- Helpful external links
+Example:
+📌 **Community College Benefits**
+• Lower cost ($3-5k/year)
+• Transfer agreements with 4-year schools
+• Flexible scheduling
 
-For all responses:
-1. Begin with appropriate header emoji (🎓 🏫 📚)
-2. Use bullet points with exact dates when available
-3. Include program specializations
-4. Note any application/test requirements
+Response Rules:
+1. Always lead with relevant emoji (🎓🏛📅)
+2. Prioritize lists over paragraphs
+3. Include exact names/locations
+4. For vague queries, ask clarifying questions
+5. Limit responses to 8 bullet points max
 
-Refuse non-educational queries with:
-"I specialize in U.S. educational programs and admissions guidance."
+Non-educational queries: 
+"I specialize in U.S. education. Please ask about schools, admissions, or programs."
 """
 
 # Create Flask app
@@ -219,9 +245,14 @@ def signup_page():
 @app.route('/index', methods=['GET'])
 def index_page():
     return render_template('index.html')
+
 @app.route('/home', methods=['GET'])
 def home_page():
     return render_template('home.html')
+
+@app.route('/forget', methods=['GET'])
+def forget_page():
+    return render_template('forget.html')
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -297,9 +328,8 @@ def login():
         cursor.close()
         db.close()
 
-@app.route('/forgot-password', methods=['GET'])
-def forgot_password_page():
-    return render_template('forgot-password.html')
+
+# ... [Previous imports and configuration remain exactly the same until the forgot-password route] ...
 
 @app.route('/forgot-password', methods=['POST'])
 def forgot_password():
@@ -315,26 +345,17 @@ def forgot_password():
 
     cursor = db.cursor()
     try:
-        # Check if email exists
+        # Simply check if email exists
         cursor.execute('SELECT email FROM users WHERE email = %s', (email,))
         if not cursor.fetchone():
-            return jsonify({'message': 'If this email exists, a reset link has been sent'}), 200
-
-        # Generate reset token
-        token = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-        expires_at = datetime.now() + timedelta(hours=1)
-
-        # Store token in database
-        cursor.execute(
-            'INSERT INTO password_resets (email, token, expires_at) VALUES (%s, %s, %s)',
-            (email, token, expires_at)
-        )
-        db.commit()
-
-        # In a real app, you would send an email with this token
-        print(f"Password reset token for {email}: {token}")  # For development only
+            return jsonify({'message': 'No account found with this email'}), 404
         
-        return jsonify({'message': 'If this email exists, a reset link has been sent'}), 200
+        # Return success if email exists
+        return jsonify({
+            'message': 'Password reset allowed',
+            'email': email,
+            'status': 'success'
+        }), 200
     except mysql.connector.Error as err:
         return jsonify({'message': f'Database error: {err}'}), 500
     finally:
@@ -344,11 +365,11 @@ def forgot_password():
 @app.route('/reset-password', methods=['POST'])
 def reset_password():
     data = request.get_json()
-    token = data.get('token')
+    email = data.get('email')
     new_password = data.get('newPassword')
     confirm_password = data.get('confirmPassword')
 
-    if not token or not new_password or not confirm_password:
+    if not email or not new_password or not confirm_password:
         return jsonify({'message': 'All fields are required'}), 400
 
     if new_password != confirm_password:
@@ -360,28 +381,17 @@ def reset_password():
 
     cursor = db.cursor()
     try:
-        # Check if token is valid and not expired
-        cursor.execute(
-            'SELECT email FROM password_resets WHERE token = %s AND expires_at > NOW()',
-            (token,)
-        )
-        result = cursor.fetchone()
-        
-        if not result:
-            return jsonify({'message': 'Invalid or expired token'}), 400
+        # Verify email exists (extra safety check)
+        cursor.execute('SELECT email FROM users WHERE email = %s', (email,))
+        if not cursor.fetchone():
+            return jsonify({'message': 'No account found with this email'}), 404
 
-        email = result[0]
+        # Update password directly
         hashed_password = generate_password_hash(new_password)
-
-        # Update password
         cursor.execute(
             'UPDATE users SET password = %s WHERE email = %s',
             (hashed_password, email)
         )
-        
-        # Delete used token
-        cursor.execute('DELETE FROM password_resets WHERE token = %s', (token,))
-        
         db.commit()
         return jsonify({'message': 'Password reset successful'}), 200
     except mysql.connector.Error as err:
@@ -389,6 +399,8 @@ def reset_password():
     finally:
         cursor.close()
         db.close()
+
+# ... [Rest of the code remains exactly the same] ...
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
