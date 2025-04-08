@@ -1,155 +1,122 @@
 const express = require('express');
-const mysql = require('mysql2/promise');
-const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
+const mysql = require('mysql2');
+const bodyParser = require('body-parser');
+
 const app = express();
 const port = 3000;
 
-app.use(express.json());
-app.use(express.static('public')); // Serve static files (HTML, CSS, JS)
-
-const dbConfig = {
-    host: 'localhost',
-    user: 'root', // Change to your MySQL username
-    password: 'your_password', // Change to your MySQL password
-    database: 'edupath_auth'
-};
-
-let pool;
-
-async function initializeDB() {
-    pool = await mysql.createPool(dbConfig);
-    console.log('MySQL connected');
-}
-
-initializeDB().catch(err => console.error('Database connection failed:', err));
-
-// Nodemailer setup for email
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'your_email@gmail.com', // Your Gmail
-        pass: 'your_app_password' // App-specific password for Gmail
-    }
+// Database Connection
+const db = mysql.createConnection({
+  host: '127.0.0.1',
+  port: 3306,
+  user: 'root',
+  password: '1234', // Empty password as per screenshot
+  database: 'edupath_auth'
 });
 
-app.post('/signup', async (req, res) => {
-    const { username, email, password } = req.body;
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const [result] = await pool.query(
-            'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-            [username, email, hashedPassword]
-        );
-        res.json({ success: true, message: 'User registered successfully' });
-    } catch (err) {
-        if (err.code === 'ER_DUP_ENTRY') {
-            res.json({ success: false, message: 'Email or username already exists' });
-        } else {
-            res.status(500).json({ success: false, message: 'Server error' });
-        }
-    }
+db.connect((err) => {
+  if (err) {
+    console.error('Database connection failed:', err.stack);
+    return;
+  }
+  console.log('Connected to database.');
 });
 
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (rows.length > 0) {
-            const user = rows[0];
-            const match = await bcrypt.compare(password, user.password);
-            if (match) {
-                res.json({ success: true, message: 'Login successful' });
-            } else {
-                res.json({ success: false, message: 'Incorrect password' });
-            }
-        } else {
-            res.json({ success: false, message: 'User not found' });
-        }
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Server error' });
+// Middleware
+app.use(bodyParser.json());
+app.use(express.static('public')); // Serve static files (HTML)
+
+// Signup Endpoint
+app.post('/signup', (req, res) => {
+  const { username, email, password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: 'Passwords do not match' });
+  }
+
+  const checkEmailQuery = 'SELECT email FROM users WHERE email = ?';
+  db.query(checkEmailQuery, [email], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+    if (results.length > 0) {
+      return res.status(400).json({ message: 'Email already exists' });
     }
+
+    const insertQuery = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+    db.query(insertQuery, [username, email, password], (err) => {
+      if (err) return res.status(500).json({ message: 'Signup failed' });
+      res.status(201).json({ message: 'Signup successful' });
+    });
+  });
 });
 
-app.post('/forget-password', async (req, res) => {
-    const { email } = req.body;
-    try {
-        const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (rows.length > 0) {
-            const token = crypto.randomBytes(20).toString('hex');
-            const expiresAt = new Date(Date.now() + 3600000); // 1 hour from now
+// Login Endpoint
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
 
-            await pool.query(
-                'INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)',
-                [email, token, expiresAt]
-            );
-
-            const resetLink = `http://localhost:3000/reset-password?token=${token}`;
-            const mailOptions = {
-                from: 'your_email@gmail.com',
-                to: email,
-                subject: 'Password Reset Request',
-                text: `Click the following link to reset your password: ${resetLink}`
-            };
-
-            await transporter.sendMail(mailOptions);
-            res.json({ success: true, message: 'Password reset link sent' });
-        } else {
-            res.json({ success: false, message: 'Email not found' });
-        }
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Server error' });
+  const query = 'SELECT * FROM users WHERE email = ? AND password = ?';
+  db.query(query, [email, password], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+    if (results.length === 0) {
+      return res.status(400).json({ message: 'Invalid email or password' });
     }
+    res.status(200).json({ message: 'Login successful' });
+  });
 });
 
-app.get('/reset-password', async (req, res) => {
-    const { token } = req.query;
-    try {
-        const [rows] = await pool.query('SELECT * FROM password_resets WHERE token = ? AND expires_at > NOW()', [token]);
-        if (rows.length > 0) {
-            res.send(`
-                <!DOCTYPE html>
-                <html>
-                <head><title>Reset Password</title></head>
-                <body>
-                    <form action="/reset-password" method="post">
-                        <input type="hidden" name="token" value="${token}">
-                        <input type="password" name="newPassword" placeholder="New Password" required><br>
-                        <input type="password" name="confirmPassword" placeholder="Confirm Password" required><br>
-                        <button type="submit">Reset Password</button>
-                    </form>
-                </body>
-                </html>
-            `);
-        } else {
-            res.send('Invalid or expired token');
-        }
-    } catch (err) {
-        res.status(500).send('Server error');
+// Forget Password Endpoint
+app.post('/forget-password', (req, res) => {
+  const { email } = req.body;
+
+  const checkEmailQuery = 'SELECT email FROM users WHERE email = ?';
+  db.query(checkEmailQuery, [email], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+    if (results.length === 0) {
+      return res.status(400).json({ message: 'Email does not exist' });
     }
+
+    const token = Math.random().toString(36).substring(2, 15);
+    const expiresAt = new Date(Date.now() + 3600000); // 1 hour expiry
+    const insertResetQuery = 'INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)';
+    db.query(insertResetQuery, [email, token, expiresAt], (err) => {
+      if (err) return res.status(500).json({ message: 'Failed to initiate reset' });
+      res.status(200).json({ message: 'Reset token generated', token });
+    });
+  });
 });
 
-app.post('/reset-password', async (req, res) => {
-    const { token, newPassword, confirmPassword } = req.body;
-    if (newPassword !== confirmPassword) {
-        return res.status(400).send('Passwords do not match');
+// Reset Password Endpoint
+app.post('/reset-password', (req, res) => {
+  const { token, newPassword, confirmPassword } = req.body;
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ message: 'Passwords do not match' });
+  }
+
+  const checkTokenQuery = 'SELECT email FROM password_resets WHERE token = ? AND expires_at > NOW()';
+  db.query(checkTokenQuery, [token], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+    if (results.length === 0) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
     }
-    try {
-        const [rows] = await pool.query('SELECT * FROM password_resets WHERE token = ? AND expires_at > NOW()', [token]);
-        if (rows.length > 0) {
-            const hashedPassword = await bcrypt.hash(newPassword, 10);
-            await pool.query('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, rows[0].email]);
-            await pool.query('DELETE FROM password_resets WHERE token = ?', [token]);
-            res.send('Password reset successful. <a href="login.html">Login</a>');
-        } else {
-            res.send('Invalid or expired token');
-        }
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+
+    const email = results[0].email;
+    const updateQuery = 'UPDATE users SET password = ? WHERE email = ?';
+    db.query(updateQuery, [newPassword, email], (err) => {
+      if (err) return res.status(500).json({ message: 'Password reset failed' });
+      const deleteQuery = 'DELETE FROM password_resets WHERE token = ?';
+      db.query(deleteQuery, [token], (err) => {
+        if (err) console.error('Failed to delete token:', err);
+      });
+      res.status(200).json({ message: 'Password reset successful' });
+    });
+  });
 });
+
+// Serve HTML files
+app.get('/login', (req, res) => res.sendFile(__dirname + '/public/login.html'));
+app.get('/signup', (req, res) => res.sendFile(__dirname + '/public/signup.html'));
+app.get('/forget-password', (req, res) => res.sendFile(__dirname + '/public/forget-password.html'));
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
