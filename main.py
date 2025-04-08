@@ -219,6 +219,9 @@ def signup_page():
 @app.route('/index', methods=['GET'])
 def index_page():
     return render_template('index.html')
+@app.route('/home', methods=['GET'])
+def home_page():
+    return render_template('home.html')
 
 @app.route('/signup', methods=['POST'])
 def signup():
