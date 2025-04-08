@@ -1,0 +1,10 @@
+To give you the best university recommendations for an MS program, I need some more information.  Please tell me:
+
+* **What is your BS degree in?** (e.g., Computer Science, Biology, Engineering)  Your undergraduate major heavily influences suitable MS programs.
+* **What are your career goals?**  Knowing your aspirations helps me suggest programs aligned with your future plans.
+* **What is your budget and funding situation?**  Tuition varies significantly between universities.
+* **Do you have a preferred location (e.g., urban, rural, specific region)?**
+* **What are your preferred learning styles?** (e.g., research-focused, project-based, lecture-heavy)
+
+
+Once I have this information, I can provide 5 relevant university recommendations with details on their MS programs.
