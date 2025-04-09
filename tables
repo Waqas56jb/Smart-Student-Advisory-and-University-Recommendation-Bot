@@ -15,3 +15,27 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE studentprofile (
+    student_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    age INT NOT NULL CHECK (age BETWEEN 12 AND 100),
+    class VARCHAR(50) NOT NULL,
+    cgpa FLOAT CHECK (cgpa IS NULL OR (cgpa >= 0 AND cgpa <= 4.0)),
+    interest VARCHAR(100),
+    scholarshipneed BOOLEAN DEFAULT FALSE,
+    hobbies TEXT,
+    state VARCHAR(50) NOT NULL,
+    email VARCHAR(100) CHECK (email IS NULL OR email LIKE '%@%.%'),
+    phone VARCHAR(20),
+    preferred_location VARCHAR(100),
+    financial_status ENUM('low', 'middle', 'high', 'prefer_not_to_say') DEFAULT 'prefer_not_to_say',
+    parents_qualification ENUM('high_school', 'bachelor', 'master', 'phd', 'other') DEFAULT 'other',
+    english_proficiency ENUM('basic', 'intermediate', 'advanced', 'native') DEFAULT 'basic',
+    extra_curriculars TEXT,
+    career_goal TEXT,
+    preferred_study_type ENUM('on_campus', 'online', 'hybrid', 'no_preference') DEFAULT 'no_preference',
+    gmat_sat_score VARCHAR(50),
+    past_achievements TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

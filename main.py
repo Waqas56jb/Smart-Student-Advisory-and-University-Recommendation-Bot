@@ -400,7 +400,49 @@ def reset_password():
         cursor.close()
         db.close()
 
+@app.route('/profile', methods=['GET'])
+def profile_page():
+    return render_template('profile.html')
 # ... [Rest of the code remains exactly the same] ...
+@app.route("/profile", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        name = request.form.get("name")
+        age = request.form.get("age")
+        class_name = request.form.get("class")
+        cgpa = request.form.get("cgpa")
+        interest = request.form.get("interest")
+        scholarshipneed = request.form.get("scholarshipneed") == "yes"
+        hobbies = request.form.get("hobbies")
+        state = request.form.get("state")
+        email = request.form.get("email")
+        phone = request.form.get("phone")
+        preferred_location = request.form.get("preferred_location")
+        financial_status = request.form.get("financial_status")
+        parents_qualification = request.form.get("parents_qualification")
+        english_proficiency = request.form.get("english_proficiency")
+        extra_curriculars = request.form.get("extra_curriculars")
+        career_goal = request.form.get("career_goal")
+        preferred_study_type = request.form.get("preferred_study_type")
+        gmat_sat_score = request.form.get("gmat_sat_score")
+        past_achievements = request.form.get("past_achievements")
+
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO studentprofile (
+                name, age, class, cgpa, interest, scholarshipneed, hobbies, state, email, phone, preferred_location,
+                financial_status, parents_qualification, english_proficiency, extra_curriculars, career_goal,
+                preferred_study_type, gmat_sat_score, past_achievements
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (name, age, class_name, cgpa, interest, scholarshipneed, hobbies, state, email, phone, preferred_location,
+              financial_status, parents_qualification, english_proficiency, extra_curriculars, career_goal,
+              preferred_study_type, gmat_sat_score, past_achievements))
+
+        db.commit()
+
+        return redirect("/")
+
+    return render_template("profile.html")
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
