@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, redirect
 import google.generativeai as genai
 import mysql.connector
+import json
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Load environment variables
@@ -121,7 +122,7 @@ def profile():
             
             return jsonify({
                 'message': 'Profile saved successfully',
-                'student_id': student_id
+                'redirect': f'/recommendation?student_id={student_id}'
             }), 200
             
         except Exception as e:
@@ -132,10 +133,6 @@ def profile():
             if 'db' in locals():
                 db.close()
     return render_template('profile.html')
-
-@app.route('/recommendation', methods=['GET'])
-def recommendation_page():
-    return render_template('recommendation.html')
 
 @app.route('/recommendation')
 def recommendation():

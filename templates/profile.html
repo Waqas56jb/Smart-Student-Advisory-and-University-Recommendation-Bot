@@ -451,66 +451,68 @@
     });
 
     document.getElementById('studentProfileForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Show loading state
-      const submitBtn = e.target.querySelector('button');
-      const originalBtnText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-      submitBtn.disabled = true;
-      
-      // Collect form data
-      const formData = new FormData(this);
-      const data = {};
-      formData.forEach((value, key) => {
+    e.preventDefault();
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitBtn.disabled = true;
+    
+    // Collect form data
+    const formData = new FormData(this);
+    const data = {};
+    formData.forEach((value, key) => {
         data[key] = value;
-      });
-      
-      // Convert scholarshipneed to boolean
-      data.scholarshipneed = data.scholarshipneed === 'yes';
-      
-      // Send to server
-      fetch('/profile', {
+    });
+    
+    // Convert scholarshipneed to boolean
+    data.scholarshipneed = data.scholarshipneed === 'yes';
+    
+    // Send to server
+    fetch('/profile', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      })
-      .then(response => {
+    })
+    .then(response => {
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+            throw new Error('Network response was not ok');
         }
         return response.json();
-      })
-      .then(data => {
+    })
+    .then(data => {
         // Show success message
         const successMessage = document.getElementById('successMessage');
         successMessage.style.display = 'block';
         
         // Scroll to top to show message
         window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
+            top: 0,
+            behavior: 'smooth'
         });
         
         // Reset form
         e.target.reset();
         
-        // Redirect to home after 3 seconds
-        setTimeout(() => {
-          window.location.href = '/recommendation';
-        }, 3000);
-      })
-      .catch(error => {
+        // Redirect using the URL from server response
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        } else {
+            throw new Error('No redirect URL received');
+        }
+    })
+    .catch(error => {
         console.error('Error:', error);
         alert('There was an error saving your profile. Please try again.');
-      })
-      .finally(() => {
+    })
+    .finally(() => {
         submitBtn.innerHTML = originalBtnText;
         submitBtn.disabled = false;
-      });
     });
+});
   </script>
 </body>
 </html>
