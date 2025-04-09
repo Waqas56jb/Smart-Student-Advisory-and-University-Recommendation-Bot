@@ -376,136 +376,144 @@
 
     // Start generating recommendation when page loads
     document.addEventListener('DOMContentLoaded', function() {
-      const profileId = "{{ profile.student_id if profile else '' }}";
-      if (!profileId) {
-        document.getElementById('recommendations-container').innerHTML = `
-          <div class="error-message">
-            <i class="fas fa-exclamation-circle"></i> No profile found. Please complete your profile first.
-          </div>
+    const studentId = "{{ profile.student_id if profile else '' }}";
+    if (!studentId) {
+        document.getElementById('recommendation-container').innerHTML = `
+            <div class="error">
+                No profile found. Please complete your profile first.
+            </div>
         `;
         return;
-      }
-
-      const container = document.getElementById('recommendations-container');
-      const eventSource = new EventSource(`/generate-recommendations?profile_id=${profileId}`);
-
-      eventSource.onmessage = function(event) {
-        if (event.data === '[DONE]') {
-          eventSource.close();
-          document.querySelector('.loading-container').innerHTML = `
-            <i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--success-green);"></i>
-            <h3>Recommendation Complete!</h3>
-            <p>We've found the best university match for you</p>
-          `;
-          setTimeout(() => {
-            document.querySelector('.loading-container').style.display = 'none';
-          }, 2000);
-          return;
-        }
-
-        try {
-          const uniData = JSON.parse(event.data);
-          if (uniData.error) {
-            document.getElementById('recommendations-container').innerHTML = `
-              <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i> ${uniData.error}
-              </div>
-            `;
-            eventSource.close();
-            return;
-          }
-          
-          // Update loading text
-          document.querySelector('.progress-text').textContent = `Found your top university match...`;
-          
-          // Create and append the university card
-          const uniCard = document.createElement('div');
-          uniCard.className = 'university-card';
-          uniCard.innerHTML = createUniversityCardHTML(uniData);
-          container.insertBefore(uniCard, document.querySelector('.loading-container'));
-          
-        } catch (e) {
-          console.error('Error parsing recommendation:', e);
-        }
-      };
-
-      eventSource.onerror = function() {
-        eventSource.close();
-        document.getElementById('recommendations-container').innerHTML = `
-          <div class="error-message">
-            <i class="fas fa-exclamation-circle"></i> Error generating recommendation. Please try again.
-          </div>
-        `;
-      };
-    });
-
-    function createUniversityCardHTML(uni) {
-      return `
-        <div class="university-header">
-          <h2 class="university-name">${uni.name || 'University Name Not Available'}</h2>
-          <span class="university-type">${uni.type || 'Type Not Available'}</span>
-        </div>
-        
-        <div class="university-location">
-          <i class="fas fa-map-marker-alt"></i> ${uni.location || 'Location Not Available'}
-          ${uni.ranking ? ' • ' + uni.ranking : ''}
-        </div>
-        
-        <div class="university-details">
-          <div class="detail-group">
-            <h3><i class="fas fa-graduation-cap"></i> Top Programs</h3>
-            <ul>
-              ${(uni.programs || ['Not specified']).map(p => `<li>${p}</li>`).join('')}
-            </ul>
-          </div>
-          
-          <div class="detail-group">
-            <h3><i class="fas fa-trophy"></i> Admissions</h3>
-            <ul>
-              ${uni.admission_rate ? `<li>Admission Rate: ${uni.admission_rate}</li>` : ''}
-              ${uni.avg_scores ? `<li>Avg Scores: ${uni.avg_scores}</li>` : ''}
-              <li>
-                Deadlines: 
-                ${uni.deadlines?.early ? `Early (${uni.deadlines.early}), ` : ''}
-                Regular (${uni.deadlines?.regular || 'Not specified'})
-              </li>
-            </ul>
-          </div>
-          
-          <div class="detail-group">
-            <h3><i class="fas fa-info-circle"></i> Contact</h3>
-            <ul>
-              ${uni.website ? `<li>Website: <a href="${uni.website}" target="_blank" class="btn" style="display: inline; padding: 0.2rem 0.5rem;">Visit</a></li>` : ''}
-              ${uni.contact?.phone ? `<li>Phone: ${uni.contact.phone}</li>` : ''}
-              ${uni.contact?.email ? `<li>Email: ${uni.contact.email}</li>` : ''}
-            </ul>
-          </div>
-        </div>
-        
-        ${uni.match_reasons ? `
-        <div class="match-reasons">
-          <h3><i class="fas fa-heart"></i> Why This Matches You</h3>
-          <ul>
-            ${uni.match_reasons.map(r => `<li>${r}</li>`).join('')}
-          </ul>
-        </div>
-        ` : ''}
-        
-        <div class="action-buttons">
-          ${uni.website ? `
-          <a href="${uni.website}" target="_blank" class="btn btn-primary">
-            <i class="fas fa-external-link-alt"></i> Visit Website
-          </a>
-          ` : ''}
-          <button class="btn save-btn" data-uni='${JSON.stringify(uni).replace(/'/g, "\\'")}'>
-            <i class="fas fa-bookmark"></i> Save
-          </button>
-          <button class="btn share-btn" data-uni='${JSON.stringify(uni).replace(/'/g, "\\'")}'>
-            <i class="fas fa-share-alt"></i> Share
-          </button>
-        </div>
-      `;
     }
+
+    fetch('/generate-recommendation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ student_id: studentId }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const container = document.getElementById('recommendation-container');
+        
+        if (data.error) {
+            // Handle AI response errors
+            let errorMsg = data.error;
+            if (data.response) {
+                errorMsg += `<br><br>AI Response:<br><pre>${JSON.stringify(data.response, null, 2)}</pre>`;
+            }
+            container.innerHTML = `
+                <div class="error">
+                    ${errorMsg}
+                </div>
+            `;
+            return;
+        }
+
+        // Successful response - create recommendation card
+        container.innerHTML = createRecommendationCard(data);
+    })
+    .catch(error => {
+        document.getElementById('recommendation-container').innerHTML = `
+            <div class="error">
+                Error fetching recommendation: ${error.message}
+            </div>
+        `;
+    });
+});
+
+function createRecommendationCard(uni) {
+    // Handle case where response might not be in expected format
+    if (!uni || typeof uni !== 'object') {
+        return `
+            <div class="university-card">
+                <p>${typeof uni === 'string' ? uni : 'University recommendation not available'}</p>
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="university-card">
+            <div class="university-header">
+                <h2 class="university-name">${uni.name || 'University Name'}</h2>
+                ${uni.type ? `<span class="university-type">${uni.type}</span>` : ''}
+            </div>
+            
+            ${uni.location ? `<p><strong>Location:</strong> ${uni.location}</p>` : ''}
+            ${uni.ranking ? `<p><strong>Ranking:</strong> ${uni.ranking}</p>` : ''}
+            
+            ${uni.programs && uni.programs.length ? `
+            <div class="programs-section">
+                <h3>Top Computer Science Programs:</h3>
+                <ul>
+                    ${uni.programs.map(p => `<li>${p}</li>`).join('')}
+                </ul>
+            </div>
+            ` : ''}
+            
+            <div class="admissions-info">
+                ${uni.admission_rate ? `<p><strong>Admission Rate:</strong> ${uni.admission_rate}</p>` : ''}
+                ${uni.avg_scores ? `<p><strong>Average Test Scores:</strong> ${uni.avg_scores}</p>` : ''}
+                
+                ${uni.deadlines ? `
+                <div class="deadlines">
+                    <h3>Important Deadlines:</h3>
+                    <ul>
+                        ${uni.deadlines.early ? `<li><strong>Early Decision:</strong> ${uni.deadlines.early}</li>` : ''}
+                        <li><strong>Regular Decision:</strong> ${uni.deadlines.regular || 'Not specified'}</li>
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+            
+            ${uni.website ? `
+            <div class="website-link">
+                <a href="${uni.website}" target="_blank" class="btn">
+                    <i class="fas fa-external-link-alt"></i> Visit University Website
+                </a>
+            </div>
+            ` : ''}
+            
+            ${uni.contact ? `
+            <div class="contact-info">
+                <h3>Contact Admissions:</h3>
+                <ul>
+                    ${uni.contact.phone ? `<li><strong>Phone:</strong> ${uni.contact.phone}</li>` : ''}
+                    ${uni.contact.email ? `<li><strong>Email:</strong> <a href="mailto:${uni.contact.email}">${uni.contact.email}</a></li>` : ''}
+                </ul>
+            </div>
+            ` : ''}
+            
+            ${uni.match_reasons && uni.match_reasons.length ? `
+            <div class="match-section">
+                <h3>Why This University Matches You:</h3>
+                <ul>
+                    ${uni.match_reasons.map(r => `<li>${r}</li>`).join('')}
+                </ul>
+            </div>
+            ` : ''}
+            
+            ${uni.similar_universities && uni.similar_universities.length ? `
+            <div class="similar-universities">
+                <h3>Similar Universities to Consider:</h3>
+                <ul>
+                    ${uni.similar_universities.map(u => `
+                    <li>
+                        <strong>${u.name}</strong> - ${u.location || 'Location not specified'}
+                    </li>
+                    `).join('')}
+                </ul>
+            </div>
+            ` : ''}
+        </div>
+    `;
+}
   </script>
 </body>
 </html>

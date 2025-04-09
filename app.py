@@ -15,30 +15,52 @@ if not api_key:
 # Configure Gemini API
 genai.configure(api_key=api_key)
 
-# Instruction for Gemini AI
+# Enhanced Instruction for Gemini AI
 instruction = """
-You are an expert U.S. educational advisor that provides personalized university recommendations based on student profiles. 
-Return a JSON object with these fields:
+You are an expert U.S. educational advisor specializing in Computer Science programs. 
+When given a student profile, provide a detailed university recommendation that closely matches:
+- The student's academic qualifications (CGPA, test scores)
+- Field of interest (Computer Science)
+- Preferred location (California)
+- Financial needs (scholarship requirements)
+- Career goals
+
+For the recommended university, provide ALL of these details in STRICT JSON format:
 {
   "name": "University Name",
   "type": "Public/Private",
   "location": "City, State",
-  "ranking": "Ranking info",
-  "programs": ["Program 1", "Program 2", "Program 3"],
+  "ranking": "National/Regional ranking",
+  "programs": ["Computer Science Program 1", "Program 2", "Program 3"],
   "admission_rate": "XX%",
-  "avg_scores": "SAT/ACT ranges",
+  "avg_scores": "Average SAT/ACT scores",
   "deadlines": {
-    "regular": "MM/DD",
-    "early": "MM/DD (if applicable)"
+    "regular": "MM/DD/YYYY",
+    "early": "MM/DD/YYYY (if applicable)"
   },
   "website": "https://university.edu",
   "contact": {
     "phone": "XXX-XXX-XXXX",
     "email": "admissions@university.edu"
   },
-  "match_reasons": ["Reason 1", "Reason 2", "Reason 3"]
+  "match_reasons": [
+    "Reason 1: How it matches the student's CGPA",
+    "Reason 2: How it matches the preferred location",
+    "Reason 3: Special CS programs matching interests",
+    "Reason 4: Scholarship opportunities if needed"
+  ],
+  "similar_universities": [
+    {"name": "Similar University 1", "location": "City, State"},
+    {"name": "Similar University 2", "location": "City, State"}
+  ]
 }
-Return only the JSON object, nothing else.
+
+IMPORTANT:
+1. MUST include at least one California university
+2. MUST return ONLY the JSON object, no additional text
+3. MUST validate the JSON structure before returning
+4. MUST include all specified fields
+5. If no perfect match exists, recommend the closest alternatives
 """
 
 # Create Flask app
@@ -50,10 +72,10 @@ model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     system_instruction=instruction,
     generation_config={
-        "temperature": 0.4,
+        "temperature": 0.7,
         "top_p": 0.9,
         "top_k": 40,
-        "max_output_tokens": 600,
+        "max_output_tokens": 1000,
     },
 )
 
@@ -71,7 +93,6 @@ def get_db_connection():
         print(f"Database connection error: {err}")
         return None
 
-# Routes
 @app.route('/')
 def home():
     return render_template('profile.html')
@@ -197,19 +218,31 @@ def generate_recommendation():
         Requirements:
         1. MUST recommend at least one California university
         2. Focus on Computer Science programs
-        3. Match the student's CGPA (3.0)
+        3. Match the student's CGPA ({profile['cgpa']})
         4. Include similar alternatives if perfect match isn't available
         5. Provide detailed match reasons
+        6. Return ONLY valid JSON with all required fields
         """
         
+        # Generate and validate the response
         response = model.generate_content(prompt)
         recommendation = response.text
         
+        # Clean the response to extract just the JSON
         try:
-            # Parse and validate the recommendation
+            # Remove markdown code blocks if present
+            if recommendation.startswith('```json'):
+                recommendation = recommendation[7:-3]  # Remove ```json and ```
+            elif recommendation.startswith('```'):
+                recommendation = recommendation[3:-3]  # Remove ``` and ```
+            
             rec_data = json.loads(recommendation)
-            if not rec_data.get('name'):
-                raise ValueError("Invalid recommendation format")
+            
+            # Validate required fields
+            required_fields = ['name', 'type', 'location', 'programs', 'match_reasons']
+            for field in required_fields:
+                if field not in rec_data:
+                    raise ValueError(f"Missing required field: {field}")
             
             # Ensure at least one California university is included
             if "california" not in rec_data.get('location', '').lower():
@@ -223,11 +256,11 @@ def generate_recommendation():
             
             return jsonify(rec_data)
             
-        except json.JSONDecodeError:
-            # If response isn't JSON, return it as text with error
+        except json.JSONDecodeError as e:
             return jsonify({
-                'error': 'Invalid response format from AI',
-                'response': recommendation
+                'error': 'Invalid JSON response from AI',
+                'response': recommendation,
+                'message': str(e)
             }), 500
             
     except Exception as e:
