@@ -453,21 +453,21 @@
     document.getElementById('studentProfileForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
+      // Collect all form data
+      const formData = new FormData(this);
+      const profileData = {};
+      formData.forEach((value, key) => {
+        profileData[key] = value;
+      });
+      
+      // Store in localStorage
+      localStorage.setItem('studentProfileData', JSON.stringify(profileData));
+      
       // Show loading state
       const submitBtn = e.target.querySelector('button');
       const originalBtnText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
       submitBtn.disabled = true;
-      
-      // Collect form data
-      const formData = new FormData(this);
-      const data = {};
-      formData.forEach((value, key) => {
-        data[key] = value;
-      });
-      
-      // Convert scholarshipneed to boolean
-      data.scholarshipneed = data.scholarshipneed === 'yes';
       
       // Send to server
       fetch('/profile', {
@@ -475,7 +475,7 @@
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(profileData),
       })
       .then(response => {
         if (!response.ok) {
@@ -497,9 +497,9 @@
         // Reset form
         e.target.reset();
         
-        // Redirect to home after 3 seconds
+        // Redirect to chat after 3 seconds
         setTimeout(() => {
-          window.location.href = '/index';
+          window.location.href = '/home';
         }, 3000);
       })
       .catch(error => {

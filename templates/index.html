@@ -670,6 +670,77 @@
           });
         });
       }, 50);
+
+      // Function to format profile data into a nicely structured prompt
+      function formatProfileData(profileData) {
+        return `
+        Here is my student profile information:
+        
+        Personal Information:
+        - Full Name: ${profileData.name || 'Not provided'}
+        - Age: ${profileData.age || 'Not provided'}
+        - Current Class/Year: ${profileData.class || 'Not provided'}
+        - CGPA: ${profileData.cgpa || 'Not provided'}
+        - State/Province: ${profileData.state || 'Not provided'}
+        - Email: ${profileData.email || 'Not provided'}
+        - Phone: ${profileData.phone || 'Not provided'}
+
+        Academic Information:
+        - Field of Interest: ${profileData.interest || 'Not provided'}
+        - Scholarship Need: ${profileData.scholarshipneed === 'yes' ? 'Yes' : 'No'}
+        - GMAT/SAT Score: ${profileData.gmat_sat_score || 'Not provided'}
+        - English Proficiency: ${profileData.english_proficiency || 'Not provided'}
+
+        Preferences:
+        - Preferred Study Location: ${profileData.preferred_location || 'Not provided'}
+        - Preferred Study Type: ${profileData.preferred_study_type || 'Not provided'}
+        - Financial Status: ${profileData.financial_status || 'Not provided'}
+        - Parents' Highest Qualification: ${profileData.parents_qualification || 'Not provided'}
+
+        Additional Information:
+        - Hobbies & Interests: ${profileData.hobbies || 'Not provided'}
+        - Extra-curricular Activities: ${profileData.extra_curriculars || 'Not provided'}
+        - Career Goals: ${profileData.career_goal || 'Not provided'}
+        - Past Achievements: ${profileData.past_achievements || 'Not provided'}
+
+        Based on this profile, please provide personalized university recommendations.
+        `;
+      }
+
+      // Check for profile data in localStorage
+      const profileData = localStorage.getItem('studentProfileData');
+      if (profileData) {
+        try {
+          const parsedData = JSON.parse(profileData);
+          const formattedPrompt = formatProfileData(parsedData);
+          
+          // Set a small delay to ensure everything is loaded
+          setTimeout(() => {
+            $input.val(formattedPrompt);
+            
+            // Show a tooltip to indicate auto-filled data
+            Swal.fire({
+              title: 'Profile Data Loaded',
+              text: 'Your student profile has been automatically filled in the chat. Press Enter to send.',
+              icon: 'info',
+              timer: 3000,
+              timerProgressBar: true,
+              toast: true,
+              position: 'top-end',
+              showConfirmButton: false
+            });
+            
+            // Focus the input and scroll to bottom
+            $input.focus();
+            scrollBottom();
+          }, 1000);
+          
+          // Clear the stored data after use (optional)
+          localStorage.removeItem('studentProfileData');
+        } catch (e) {
+          console.error('Error parsing profile data:', e);
+        }
+      }
     });
   </script>
 </body>

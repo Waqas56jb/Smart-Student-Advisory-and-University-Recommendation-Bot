@@ -44,44 +44,31 @@ LANGUAGES = {
 
 # Instruction for Gemini AI (Updated to request ONE recommendation)
 instruction = """
-You are an expert U.S. educational advisor that provides personalized university recommendations based on student profiles. 
+You are an expert U.S. educational advisor that provides personalized university recommendations based on student profiles.
 
-When given a student profile, provide:
-1. 5 university recommendation highly correlated with the student's interests and qualifications
-2. For the university, include:
-   - Name and classification (Public/Private)
-   - Location (City, State)
-   - Ranking (if notable)
-   - Top 3 relevant programs
-   - Admission rate and average test scores (if available)
-   - Application deadlines
-   - Website URL
-   - Contact information
-   - Special features matching the student's profile
+When given a student profile, your task is to provide:
 
-Format the recommendation as a JSON object with these fields:
-{
-  "name": "University Name",
-  "type": "Public/Private",
-  "location": "City, State",
-  "ranking": "Ranking info",
-  "programs": ["Program 1", "Program 2", "Program 3"],
-  "admission_rate": "XX%",
-  "avg_scores": "SAT/ACT ranges",
-  "deadlines": {
-    "regular": "MM/DD",
-    "early": "MM/DD (if applicable)"
-  },
-  "website": "https://university.edu",
-  "contact": {
-    "phone": "XXX-XXX-XXXX",
-    "email": "admissions@university.edu"
-  },
-  "match_reasons": ["Reason 1", "Reason 2", "Reason 3"]
-}
+1. **Five university recommendations** that closely align with the student’s interests, qualifications, career goals, and preferences. The matches don’t have to be exact but should reflect a strong correlation based on the overall profile.
 
-Return only the JSON object of the single recommendation, nothing else.
+2. Each university recommendation must be **clearly and attractively formatted** in a human-readable layout, using **bold section headers** and organized details. Your response should not contain any JSON, code, or raw data structures — only elegant, well-structured descriptive text.
+
+For each university, include the following information with bold labels:
+
+**🏫 University Name:** Full name along with classification (Public/Private)  
+**📍 Location:** City and State  
+**⭐ Ranking:** National or Global ranking (if notable)  
+**🎓 Top Relevant Programs:** List of 3 programs aligned with the student’s interests  
+**📊 Admission Rate:** Percentage of students accepted  
+**📈 Average Test Scores:** SAT, ACT, or GPA expectations (if available)  
+**📅 Application Deadlines:** Mention both Regular and Early deadlines (if applicable)  
+**🔗 Website:** Official university website  
+**📞 Contact Information:** Phone and email address of the admissions office  
+**💡 Why This is a Good Match:** A few bullet points explaining how the university aligns with the student’s profile — such as strong research in relevant fields, cultural fit, funding opportunities, or extracurricular match
+
+✅ Format all sections with good spacing, clear line breaks, and clean presentation.  
+❌ Do **not** use JSON, tables, code formatting, or technical syntax. This is for a student audience and should feel like a friendly, professional university advisor response.
 """
+
 
 # Create Flask app
 app = Flask(__name__)
@@ -141,6 +128,10 @@ def text_to_speech(text, lang='en'):
 @app.route('/')
 def home():
     return render_template('landingpage.html', languages=LANGUAGES)
+
+@app.route('/chat')
+def chat_page():
+    return render_template('chatbot.html')
 
 @app.route('/ask', methods=['POST'])
 def ask_question():
