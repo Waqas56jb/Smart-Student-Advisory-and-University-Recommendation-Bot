@@ -1,408 +1,516 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Profile | EduPath Advisor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --accent-color: #4895ef;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --success-color: #4cc9f0;
-            --warning-color: #f72585;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f7fa;
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .profile-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .profile-header h1 {
-            color: var(--primary-color);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .profile-header p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .profile-form {
-            background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--dark-color);
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            font-family: inherit;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-        }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .radio-option input {
-            width: auto;
-        }
-
-        .btn {
-            display: inline-block;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .btn:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-
-        .btn-block {
-            display: block;
-            width: 100%;
-        }
-
-        .section-title {
-            font-size: 1.3rem;
-            color: var(--primary-color);
-            margin: 25px 0 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--accent-color);
-        }
-
-        .form-footer {
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .profile-header h1 {
-                font-size: 2rem;
-            }
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent-color);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-color);
-        }
-
-        /* Success message */
-        .success-message {
-            display: none;
-            background-color: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Profile | Smart University Search</title>
+  <!-- Particles.js -->
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue: #4361ee;
+      --dark-blue: #3a0ca3;
+      --light-blue: #4cc9f0;
+      --white: #ffffff;
+      --light-gray: rgba(248, 249, 250, 0.9);
+      --success-green: #4bb543;
+      --border-radius: 12px;
+      --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      --glass-effect: rgba(255, 255, 255, 0.15);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, var(--dark-blue), var(--primary-blue));
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background-color: var(--dark-blue);
+      z-index: 0;
+    }
+    
+    .main-container {
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      z-index: 1;
+    }
+    
+    .profile-card {
+      background: var(--glass-effect);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 2.5rem;
+      margin-top: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .profile-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      color: var(--white);
+    }
+    
+    .profile-header .logo {
+      color: var(--white);
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .profile-header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .profile-header p {
+      font-size: 1.1rem;
+      max-width: 700px;
+      margin: 0 auto;
+      opacity: 0.9;
+    }
+    
+    .section-title {
+      color: var(--white);
+      font-size: 1.4rem;
+      margin: 2rem 0 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--white);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 14px 18px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+      transition: all 0.3s ease;
+    }
+    
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--light-blue);
+      box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    
+    .radio-group {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--white);
+    }
+    
+    .radio-option input {
+      width: auto;
+    }
+    
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+      color: var(--white);
+      border: none;
+      padding: 15px 30px;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn-block {
+      display: block;
+      width: 100%;
+    }
+    
+    .form-footer {
+      margin-top: 2.5rem;
+      text-align: center;
+    }
+    
+    /* Success message */
+    .success-message {
+      display: none;
+      background-color: rgba(75, 181, 67, 0.3);
+      color: var(--white);
+      padding: 15px;
+      border-radius: var(--border-radius);
+      margin-bottom: 2rem;
+      text-align: center;
+      border: 1px solid var(--success-green);
+      backdrop-filter: blur(5px);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 1rem;
+      }
+      
+      .profile-card {
+        padding: 1.5rem;
+      }
+      
+      .profile-header .logo {
+        font-size: 2rem;
+      }
+      
+      .profile-header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-blue);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--dark-blue);
+    }
+    
+    /* Input icons */
+    .input-icon {
+      color: var(--white);
+      margin-right: 8px;
+      opacity: 0.8;
+    }
+    
+    /* Select dropdown styling */
+    select option {
+      background-color: var(--dark-blue);
+      color: var(--white);
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="profile-header">
-            <h1>Student Profile</h1>
-            <p>Complete your profile to get personalized university recommendations</p>
+  <div id="particles-js"></div>
+  
+  <div class="main-container">
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="logo">Smart University Search</div>
+        <h1>Student Profile Builder</h1>
+        <p>Complete your academic profile to unlock personalized university recommendations tailored just for you. Our AI advisor will use this information to find your perfect educational path.</p>
+      </div>
+
+      <div id="successMessage" class="success-message">
+        <i class="fas fa-check-circle"></i> Your profile has been successfully saved! Redirecting...
+      </div>
+
+      <form id="studentProfileForm">
+        <h2 class="section-title"><i class="fas fa-user input-icon"></i> Personal Information</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" name="name" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="age">Age *</label>
+            <input type="number" id="age" name="age" min="12" max="100" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="class">Current Class/Year *</label>
+            <input type="text" id="class" name="class" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="cgpa">Current CGPA (0-4.0)</label>
+            <input type="number" id="cgpa" name="cgpa" min="0" max="4" step="0.01" placeholder="3.5">
+          </div>
+          
+          <div class="form-group">
+            <label for="state">State/Province *</label>
+            <input type="text" id="state" name="state" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="student@example.com">
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="+1 (123) 456-7890">
+          </div>
         </div>
 
-        <div id="successMessage" class="success-message">
-            Your profile has been successfully saved!
+        <h2 class="section-title"><i class="fas fa-graduation-cap input-icon"></i> Academic Information</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="interest">Primary Field of Interest</label>
+            <input type="text" id="interest" name="interest" placeholder="e.g., Computer Science, Medicine">
+          </div>
+          
+          <div class="form-group">
+            <label>Need Scholarship?</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" id="scholarship-yes" name="scholarshipneed" value="yes">
+                <label for="scholarship-yes">Yes</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" id="scholarship-no" name="scholarshipneed" value="no" checked>
+                <label for="scholarship-no">No</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="gmat_sat_score">GMAT/SAT Score (if available)</label>
+            <input type="text" id="gmat_sat_score" name="gmat_sat_score" placeholder="e.g., SAT 1400">
+          </div>
+          
+          <div class="form-group">
+            <label for="english_proficiency">English Proficiency</label>
+            <select id="english_proficiency" name="english_proficiency">
+              <option value="basic">Basic</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="native">Native</option>
+            </select>
+          </div>
         </div>
 
-        <form id="studentProfileForm" class="profile-form">
-            <h2 class="section-title">Personal Information</h2>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="name">Full Name *</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="age">Age *</label>
-                    <input type="number" id="age" name="age" min="12" max="100" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="class">Current Class/Year *</label>
-                    <input type="text" id="class" name="class" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="cgpa">Current CGPA (0-4.0)</label>
-                    <input type="number" id="cgpa" name="cgpa" min="0" max="4" step="0.01">
-                </div>
-                
-                <div class="form-group">
-                    <label for="state">State/Province *</label>
-                    <input type="text" id="state" name="state" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email">
-                </div>
-                
-                <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone">
-                </div>
-            </div>
+        <h2 class="section-title"><i class="fas fa-globe-americas input-icon"></i> Preferences</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="preferred_location">Preferred Study Location</label>
+            <input type="text" id="preferred_location" name="preferred_location" placeholder="e.g., California, Europe">
+          </div>
+          
+          <div class="form-group">
+            <label for="preferred_study_type">Preferred Study Type</label>
+            <select id="preferred_study_type" name="preferred_study_type">
+              <option value="no_preference">No Preference</option>
+              <option value="on_campus">On Campus</option>
+              <option value="online">Online</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="financial_status">Financial Status</label>
+            <select id="financial_status" name="financial_status">
+              <option value="prefer_not_to_say">Prefer not to say</option>
+              <option value="low">Low</option>
+              <option value="middle">Middle</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="parents_qualification">Parents' Highest Qualification</label>
+            <select id="parents_qualification" name="parents_qualification">
+              <option value="other">Other</option>
+              <option value="high_school">High School</option>
+              <option value="bachelor">Bachelor's Degree</option>
+              <option value="master">Master's Degree</option>
+              <option value="phd">PhD</option>
+            </select>
+          </div>
+        </div>
 
-            <h2 class="section-title">Academic Information</h2>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="interest">Primary Field of Interest</label>
-                    <input type="text" id="interest" name="interest" placeholder="e.g., Computer Science, Medicine">
-                </div>
-                
-                <div class="form-group">
-                    <label>Need Scholarship?</label>
-                    <div class="radio-group">
-                        <div class="radio-option">
-                            <input type="radio" id="scholarship-yes" name="scholarshipneed" value="yes">
-                            <label for="scholarship-yes">Yes</label>
-                        </div>
-                        <div class="radio-option">
-                            <input type="radio" id="scholarship-no" name="scholarshipneed" value="no" checked>
-                            <label for="scholarship-no">No</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="gmat_sat_score">GMAT/SAT Score (if available)</label>
-                    <input type="text" id="gmat_sat_score" name="gmat_sat_score">
-                </div>
-                
-                <div class="form-group">
-                    <label for="english_proficiency">English Proficiency</label>
-                    <select id="english_proficiency" name="english_proficiency">
-                        <option value="basic">Basic</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
-                        <option value="native">Native</option>
-                    </select>
-                </div>
-            </div>
+        <h2 class="section-title"><i class="fas fa-star input-icon"></i> Additional Information</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="hobbies">Hobbies & Interests</label>
+            <textarea id="hobbies" name="hobbies" placeholder="Your hobbies and interests"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="extra_curriculars">Extra-curricular Activities</label>
+            <textarea id="extra_curriculars" name="extra_curriculars" placeholder="Sports, clubs, volunteer work, etc."></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="career_goal">Career Goals</label>
+            <textarea id="career_goal" name="career_goal" placeholder="Your long-term career aspirations"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="past_achievements">Past Achievements</label>
+            <textarea id="past_achievements" name="past_achievements" placeholder="Awards, honors, special recognitions"></textarea>
+          </div>
+        </div>
 
-            <h2 class="section-title">Preferences</h2>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="preferred_location">Preferred Study Location</label>
-                    <input type="text" id="preferred_location" name="preferred_location" placeholder="e.g., California, Europe">
-                </div>
-                
-                <div class="form-group">
-                    <label for="preferred_study_type">Preferred Study Type</label>
-                    <select id="preferred_study_type" name="preferred_study_type">
-                        <option value="no_preference">No Preference</option>
-                        <option value="on_campus">On Campus</option>
-                        <option value="online">Online</option>
-                        <option value="hybrid">Hybrid</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="financial_status">Financial Status</label>
-                    <select id="financial_status" name="financial_status">
-                        <option value="prefer_not_to_say">Prefer not to say</option>
-                        <option value="low">Low</option>
-                        <option value="middle">Middle</option>
-                        <option value="high">High</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="parents_qualification">Parents' Highest Qualification</label>
-                    <select id="parents_qualification" name="parents_qualification">
-                        <option value="other">Other</option>
-                        <option value="high_school">High School</option>
-                        <option value="bachelor">Bachelor's Degree</option>
-                        <option value="master">Master's Degree</option>
-                        <option value="phd">PhD</option>
-                    </select>
-                </div>
-            </div>
-
-            <h2 class="section-title">Additional Information</h2>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="hobbies">Hobbies & Interests</label>
-                    <textarea id="hobbies" name="hobbies" placeholder="Your hobbies and interests"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="extra_curriculars">Extra-curricular Activities</label>
-                    <textarea id="extra_curriculars" name="extra_curriculars" placeholder="Sports, clubs, volunteer work, etc."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="career_goal">Career Goals</label>
-                    <textarea id="career_goal" name="career_goal" placeholder="Your long-term career aspirations"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="past_achievements">Past Achievements</label>
-                    <textarea id="past_achievements" name="past_achievements" placeholder="Awards, honors, special recognitions"></textarea>
-                </div>
-            </div>
-
-            <div class="form-footer">
-                <button type="submit" class="btn btn-block">Save Profile</button>
-            </div>
-        </form>
+        <div class="form-footer">
+          <button type="submit" class="btn btn-block">
+            <i class="fas fa-save"></i> Save Profile
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <script>
-        document.getElementById('studentProfileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Collect form data
-            const formData = new FormData(this);
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
-            
-            // Convert scholarshipneed to boolean
-            data.scholarshipneed = data.scholarshipneed === 'yes';
-            
-            // Send to server
-            fetch('/profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Show success message
-                const successMessage = document.getElementById('successMessage');
-                successMessage.style.display = 'block';
-                
-                // Scroll to top to show message
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-                
-                // Hide message after 5 seconds
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 5000);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('There was an error saving your profile. Please try again.');
-            });
+  <script>
+    // Initialize particles.js
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: "#ffffff" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5, random: true },
+        size: { value: 4, random: true },
+        line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.3, width: 1 },
+        move: { enable: true, speed: 3, direction: "none", random: true, straight: false, out_mode: "out" }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "repulse" },
+          onclick: { enable: true, mode: "push" }
+        },
+        modes: {
+          repulse: { distance: 100, duration: 0.4 },
+          push: { particles_nb: 4 }
+        }
+      },
+      retina_detect: true
+    });
+
+    document.getElementById('studentProfileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Show loading state
+      const submitBtn = e.target.querySelector('button');
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      submitBtn.disabled = true;
+      
+      // Collect form data
+      const formData = new FormData(this);
+      const data = {};
+      formData.forEach((value, key) => {
+        data[key] = value;
+      });
+      
+      // Convert scholarshipneed to boolean
+      data.scholarshipneed = data.scholarshipneed === 'yes';
+      
+      // Send to server
+      fetch('/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Show success message
+        const successMessage = document.getElementById('successMessage');
+        successMessage.style.display = 'block';
+        
+        // Scroll to top to show message
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
         });
-    </script>
+        
+        // Reset form
+        e.target.reset();
+        
+        // Redirect to home after 3 seconds
+        setTimeout(() => {
+          window.location.href = '/recommendation';
+        }, 3000);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('There was an error saving your profile. Please try again.');
+      })
+      .finally(() => {
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+      });
+    });
+  </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, Response
 import google.generativeai as genai
 import pyttsx3
 from googletrans import Translator
@@ -11,6 +11,7 @@ import random
 import string
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+from google.api_core.exceptions import ServiceUnavailable
 
 # Load environment variables
 load_dotenv()
@@ -41,80 +42,45 @@ LANGUAGES = {
     'hi': {'name': 'Hindi', 'flag': '🇮🇳'},
 }
 
-# Instruction for Gemini AI
+# Instruction for Gemini AI (Updated to request ONE recommendation)
 instruction = """
-You are an expert U.S. educational advisor specializing in concise, actionable information. Follow these guidelines:
+You are an expert U.S. educational advisor that provides personalized university recommendations based on student profiles. 
 
-1. DIRECT UNIVERSITY REQUESTS:
-- When asked for university names (e.g., "List universities in California"), immediately provide:
-  • A bulleted list of institutions
-  • Basic classification (Public/Private)
-  • Location (City, State)
-  Example:
-  🎓 **Top Universities in California**
-  - Stanford University (Private) - Stanford, CA
-  - UC Berkeley (Public) - Berkeley, CA
-  - UCLA (Public) - Los Angeles, CA
+When given a student profile, provide:
+1. One university recommendation highly correlated with the student's interests and qualifications
+2. For the university, include:
+   - Name and classification (Public/Private)
+   - Location (City, State)
+   - Ranking (if notable)
+   - Top 3 relevant programs
+   - Admission rate and average test scores (if available)
+   - Application deadlines
+   - Website URL
+   - Contact information
+   - Special features matching the student's profile
 
-2. DETAILED UNIVERSITY PROFILES:
-When asked about specific universities, provide:
-• Ranking (if notable)
-• Popular programs (top 3)
-• Admission rate
-• Average test scores
-• Application deadline
-Example:
-🏛 **University of Michigan Profile**
-- Public research university (Ann Arbor, MI)
-- Top Programs: Business, Engineering, Medicine
-- Admission: 20% acceptance, SAT 1350-1530
-- Deadline: February 1 (Regular Decision)
+Format the recommendation as a JSON object with these fields:
+{
+  "name": "University Name",
+  "type": "Public/Private",
+  "location": "City, State",
+  "ranking": "Ranking info",
+  "programs": ["Program 1", "Program 2", "Program 3"],
+  "admission_rate": "XX%",
+  "avg_scores": "SAT/ACT ranges",
+  "deadlines": {
+    "regular": "MM/DD",
+    "early": "MM/DD (if applicable)"
+  },
+  "website": "https://university.edu",
+  "contact": {
+    "phone": "XXX-XXX-XXXX",
+    "email": "admissions@university.edu"
+  },
+  "match_reasons": ["Reason 1", "Reason 2", "Reason 3"]
+}
 
-3. ADMISSIONS GUIDANCE:
-For application questions include:
-• Exact dates (MM/DD format)
-• Required tests
-• Minimum GPAs
-• Application components
-Example:
-📅 **Harvard Application Requirements**
-- Deadline: 01/01 (Regular)
-- Tests: SAT/ACT (test-optional 2024)
-- Essays: 2 supplements + personal statement
-
-4. PROGRAM COMPARISONS:
-When comparing programs:
-• List key differences in table format
-• Highlight unique opportunities
-• Note cost differences
-Example:
-📊 **MIT vs Caltech Engineering**
-| Feature       | MIT            | Caltech       |
-|--------------|----------------|---------------|
-| Size         | 4,500 undergrad | 900 undergrad |
-| Focus        | Applied tech   | Theoretical   |
-| Research     | $700M funding  | $300M funding |
-
-5. QUICK FACTS:
-For general queries, provide:
-- Concise bullet points
-- Verified statistics
-- Helpful external links
-Example:
-📌 **Community College Benefits**
-• Lower cost ($3-5k/year)
-• Transfer agreements with 4-year schools
-• Flexible scheduling
-
-Response Rules:
-1. Always lead with relevant emoji (🎓🏛📅)
-2. Prioritize lists over paragraphs
-3. Include exact names/locations
-4. For vague queries, ask clarifying questions
-5. Limit responses to 8 bullet points max
-
-Non-educational queries: 
-"I specialize in U.S. education. Please ask about schools, admissions, or programs."
+Return only the JSON object of the single recommendation, nothing else.
 """
 
 # Create Flask app
@@ -328,9 +294,6 @@ def login():
         cursor.close()
         db.close()
 
-
-# ... [Previous imports and configuration remain exactly the same until the forgot-password route] ...
-
 @app.route('/forgot-password', methods=['POST'])
 def forgot_password():
     data = request.get_json()
@@ -403,46 +366,159 @@ def reset_password():
 @app.route('/profile', methods=['GET'])
 def profile_page():
     return render_template('profile.html')
-# ... [Rest of the code remains exactly the same] ...
-@app.route("/profile", methods=["GET", "POST"])
-def index():
+
+@app.route("/profile", methods=["POST"])
+def handle_profile():
     if request.method == "POST":
-        name = request.form.get("name")
-        age = request.form.get("age")
-        class_name = request.form.get("class")
-        cgpa = request.form.get("cgpa")
-        interest = request.form.get("interest")
-        scholarshipneed = request.form.get("scholarshipneed") == "yes"
-        hobbies = request.form.get("hobbies")
-        state = request.form.get("state")
-        email = request.form.get("email")
-        phone = request.form.get("phone")
-        preferred_location = request.form.get("preferred_location")
-        financial_status = request.form.get("financial_status")
-        parents_qualification = request.form.get("parents_qualification")
-        english_proficiency = request.form.get("english_proficiency")
-        extra_curriculars = request.form.get("extra_curriculars")
-        career_goal = request.form.get("career_goal")
-        preferred_study_type = request.form.get("preferred_study_type")
-        gmat_sat_score = request.form.get("gmat_sat_score")
-        past_achievements = request.form.get("past_achievements")
+        try:
+            # Get form data as JSON
+            data = request.get_json()
+            
+            # Convert scholarshipneed to boolean
+            scholarshipneed = data.get('scholarshipneed', 'no') == 'yes'
+            
+            # Connect to database
+            db = get_db_connection()
+            if not db:
+                return jsonify({'message': 'Database connection failed'}), 500
+                
+            cursor = db.cursor()
+            
+            # Insert data into database
+            cursor.execute("""
+                INSERT INTO studentprofile (
+                    name, age, class, cgpa, interest, scholarshipneed, hobbies, state, email, phone, 
+                    preferred_location, financial_status, parents_qualification, english_proficiency, 
+                    extra_curriculars, career_goal, preferred_study_type, gmat_sat_score, past_achievements
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                data.get('name'),
+                data.get('age'),
+                data.get('class'),
+                data.get('cgpa'),
+                data.get('interest'),
+                scholarshipneed,
+                data.get('hobbies'),
+                data.get('state'),
+                data.get('email'),
+                data.get('phone'),
+                data.get('preferred_location'),
+                data.get('financial_status'),
+                data.get('parents_qualification'),
+                data.get('english_proficiency'),
+                data.get('extra_curriculars'),
+                data.get('career_goal'),
+                data.get('preferred_study_type'),
+                data.get('gmat_sat_score'),
+                data.get('past_achievements')
+            ))
+            
+            db.commit()
+            return jsonify({'message': 'Profile saved successfully'}), 200
+            
+        except mysql.connector.Error as err:
+            db.rollback()
+            return jsonify({'message': f'Database error: {err}'}), 500
+        except Exception as e:
+            return jsonify({'message': f'Error: {str(e)}'}), 500
+        finally:
+            if 'cursor' in locals():
+                cursor.close()
+            if 'db' in locals():
+                db.close()
 
-        cursor = db.cursor()
-        cursor.execute("""
-            INSERT INTO studentprofile (
-                name, age, class, cgpa, interest, scholarshipneed, hobbies, state, email, phone, preferred_location,
-                financial_status, parents_qualification, english_proficiency, extra_curriculars, career_goal,
-                preferred_study_type, gmat_sat_score, past_achievements
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (name, age, class_name, cgpa, interest, scholarshipneed, hobbies, state, email, phone, preferred_location,
-              financial_status, parents_qualification, english_proficiency, extra_curriculars, career_goal,
-              preferred_study_type, gmat_sat_score, past_achievements))
+@app.route('/recommendation')
+def recommendation_page():
+    # Get the most recent profile (you should replace this with user session logic)
+    db = get_db_connection()
+    if not db:
+        return render_template('recommendation.html', error="Database connection failed")
+    
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM studentprofile ORDER BY student_id DESC LIMIT 1")
+        profile = cursor.fetchone()
+        
+        if not profile:
+            return render_template('recommendation.html', error="No profile found")
+        
+        return render_template('recommendation.html', profile=profile)
+        
+    except Exception as e:
+        print(f"Error getting profile: {str(e)}")
+        return render_template('recommendation.html', error=str(e))
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'db' in locals():
+            db.close()
 
-        db.commit()
-
-        return redirect("/")
-
-    return render_template("profile.html")
+# Updated endpoint to handle ONE recommendation and ServiceUnavailable error
+@app.route('/generate-recommendations', methods=['GET'])
+def generate_recommendations():
+    profile_id = request.args.get('profile_id')
+    
+    if not profile_id:
+        return jsonify({'error': 'Profile ID is required'}), 400
+    
+    db = get_db_connection()
+    if not db:
+        return jsonify({'error': 'Database connection failed'}), 500
+    
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM studentprofile WHERE student_id = %s", (profile_id,))
+        profile = cursor.fetchone()
+        
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        # Build the prompt for Gemini (updated for one recommendation)
+        prompt = f"""
+        Generate one university recommendation highly correlated with this student profile:
+        - Name: {profile['name']}
+        - Age: {profile['age']}
+        - Current Class: {profile['class']}
+        - CGPA: {profile['cgpa']}
+        - Field of Interest: {profile['interest']}
+        - Needs Scholarship: {'Yes' if profile['scholarshipneed'] else 'No'}
+        - State: {profile['state']}
+        - Preferred Location: {profile['preferred_location']}
+        - Financial Status: {profile['financial_status']}
+        - English Proficiency: {profile['english_proficiency']}
+        - Career Goals: {profile['career_goal']}
+        - Study Type Preference: {profile['preferred_study_type']}
+        - Test Scores: {profile['gmat_sat_score']}
+        - Extracurriculars: {profile['extra_curriculars']}
+        
+        Provide one detailed recommendation matching this profile.
+        """
+        
+        # Stream the response using server-sent events (SSE)
+        def generate():
+            try:
+                response = model.generate_content(prompt, stream=True)
+                for chunk in response:
+                    yield f"data: {chunk.text}\n\n"
+            except ServiceUnavailable as e:
+                error_message = "The model is overloaded. Please try again later."
+                yield f"data: {json.dumps({'error': error_message})}\n\n"
+            except Exception as e:
+                error_message = f"Error generating recommendation: {str(e)}"
+                yield f"data: {json.dumps({'error': error_message})}\n\n"
+            finally:
+                yield "data: [DONE]\n\n"
+        
+        return Response(generate(), mimetype='text/event-stream')
+        
+    except Exception as e:
+        print(f"Error generating recommendation: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'db' in locals():
+            db.close()
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
