@@ -181,29 +181,54 @@ def generate_recommendation():
         if not profile:
             return jsonify({'error': 'Profile not found'}), 404
         
+        # Enhanced prompt with specific guidance for Gemini
         prompt = f"""
-        Generate university recommendation for:
+        Generate a detailed university recommendation for this Computer Science student:
+        
+        Student Profile:
         - Name: {profile['name']}
-        - Age: {profile['age']}
-        - Class: {profile['class']}
         - CGPA: {profile['cgpa']}
-        - Interest: {profile['interest']}
+        - Field: Computer Science
+        - Location Preference: {profile['preferred_location']}
         - Needs Scholarship: {'Yes' if profile['scholarshipneed'] else 'No'}
-        - State: {profile['state']}
-        - Preferred Location: {profile['preferred_location']}
         - Career Goals: {profile['career_goal']}
         - Test Scores: {profile['gmat_sat_score']}
+        
+        Requirements:
+        1. MUST recommend at least one California university
+        2. Focus on Computer Science programs
+        3. Match the student's CGPA (3.0)
+        4. Include similar alternatives if perfect match isn't available
+        5. Provide detailed match reasons
         """
         
         response = model.generate_content(prompt)
         recommendation = response.text
         
         try:
-            # Try to parse as JSON
-            return jsonify(json.loads(recommendation))
+            # Parse and validate the recommendation
+            rec_data = json.loads(recommendation)
+            if not rec_data.get('name'):
+                raise ValueError("Invalid recommendation format")
+            
+            # Ensure at least one California university is included
+            if "california" not in rec_data.get('location', '').lower():
+                if 'similar_universities' in rec_data:
+                    for uni in rec_data['similar_universities']:
+                        if "california" in uni.get('location', '').lower():
+                            rec_data['location'] = uni['location']
+                            rec_data['name'] = uni['name']
+                            rec_data['match_reasons'].append("Included California alternative based on your preference")
+                            break
+            
+            return jsonify(rec_data)
+            
         except json.JSONDecodeError:
-            # Return as text if not JSON
-            return jsonify({'response': recommendation})
+            # If response isn't JSON, return it as text with error
+            return jsonify({
+                'error': 'Invalid response format from AI',
+                'response': recommendation
+            }), 500
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500
