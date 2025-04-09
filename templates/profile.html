@@ -425,7 +425,7 @@
   </div>
 
   <script>
-    // Initialize particles.js
+    // Initialize particles.js (unchanged)
     particlesJS('particles-js', {
       particles: {
         number: { value: 80, density: { enable: true, value_area: 800 } },
@@ -451,68 +451,54 @@
     });
 
     document.getElementById('studentProfileForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Show loading state
-    const submitBtn = e.target.querySelector('button');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-    submitBtn.disabled = true;
-    
-    // Collect form data
-    const formData = new FormData(this);
-    const data = {};
-    formData.forEach((value, key) => {
-        data[key] = value;
-    });
-    
-    // Convert scholarshipneed to boolean
-    data.scholarshipneed = data.scholarshipneed === 'yes';
-    
-    // Send to server
-    fetch('/profile', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Show success message
-        const successMessage = document.getElementById('successMessage');
-        successMessage.style.display = 'block';
+        e.preventDefault();
         
-        // Scroll to top to show message
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
+        const submitBtn = e.target.querySelector('button');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        submitBtn.disabled = true;
+        
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
         });
+        data.scholarshipneed = data.scholarshipneed === 'yes';
         
-        // Reset form
-        e.target.reset();
-        
-        // Redirect using the URL from server response
-        if (data.redirect) {
-            window.location.href = data.redirect;
-        } else {
-            throw new Error('No redirect URL received');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('There was an error saving your profile. Please try again.');
-    })
-    .finally(() => {
-        submitBtn.innerHTML = originalBtnText;
-        submitBtn.disabled = false;
+        fetch('/profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            e.target.reset();
+            
+            setTimeout(() => {
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    throw new Error('No redirect URL received');
+                }
+            }, 2000); // Redirect after 2 seconds
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error saving profile. Please try again.');
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        });
     });
-});
-  </script>
+</script>
 </body>
 </html>
