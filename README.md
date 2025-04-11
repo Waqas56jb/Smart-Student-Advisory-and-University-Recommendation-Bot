@@ -31,17 +31,7 @@ Welcome to **EduPath**, a smart chatbot that helps students choose the best univ
 
 ## 🛠️ Installation Instructions
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Waqas56jb/Smart-Student-Advisory-and-University-Recommendation-Bot.git
-   cd Smart-Student-Advisory-and-University-Recommendation-Bot
-   ```
-
-2. (Optional) Create a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+1.  
 
 3. Install required dependencies:
    ```bash
@@ -50,12 +40,12 @@ Welcome to **EduPath**, a smart chatbot that helps students choose the best univ
 
 4. Run the Flask server:
    ```bash
-   python app.py
+   python server.py
    ```
 
 5. Open your browser and go to:
    ```
-   http://127.0.0.1:5000
+   http://127.0.0.1:5000d
    ```
 
 ## 📂 Project Structure
@@ -66,7 +56,7 @@ Welcome to **EduPath**, a smart chatbot that helps students choose the best univ
 ├── css/
 ├── js/
 ├── images/
-📄 app.py
+📄 server.py
 📄 requirements.txt
 📄 README.md
 ```
@@ -74,11 +64,5 @@ Welcome to **EduPath**, a smart chatbot that helps students choose the best univ
 ## 🤝 Contributing
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you’d like to change.
-
-## 📧 Contact
-
-Created by [Waqas](https://github.com/Waqas56jb)  
-Feel free to connect for questions or collaboration!
-
-```
+ 
  
