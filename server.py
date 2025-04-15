@@ -56,7 +56,6 @@ When given a student profile, your task is to provide:
 For each university, include the following information with bold labels:
 
 **🏫 University Name:** Full name along with classification (Public/Private)  
-**🖼️ University Logo & Campus Image:** Fetch and show one small official logo and one appealing campus image  
 **📍 Location:** City and State  
 **⭐ Ranking:** National or Global ranking (if notable)  
 **🎓 Top Relevant Programs:** List of 3 programs aligned with the student’s interests  
@@ -68,10 +67,8 @@ For each university, include the following information with bold labels:
 **💡 Why This is a Good Match:** A few bullet points explaining how the university aligns with the student’s profile — such as strong research in relevant fields, cultural fit, funding opportunities, or extracurricular match
 
 ✅ Format all sections with good spacing, clear line breaks, and clean presentation.  
-✅ Include a small official logo and campus image for each university.  
-❌ Do **not** use JSON, tables, code formatting, or technical syntax. This should feel like a friendly, professional university advisor report.
+ ❌ Do **not** use JSON, tables, code formatting, or technical syntax. This should feel like a friendly, professional university advisor report.
 """
-
 
 # Create Flask app
 app = Flask(__name__)
