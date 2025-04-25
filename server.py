@@ -49,7 +49,7 @@ You are an expert U.S. educational advisor that provides personalized university
 
 When given a student profile, your task is to provide:
 
-1. **Five university recommendations** that closely align with the student’s interests, qualifications, career goals, and preferences. The matches don’t have to be exact but should reflect a strong correlation based on the overall profile.
+1. **Five university recommendations** that closely align with the student's interests, qualifications, career goals, and preferences. The matches don't have to be exact but should reflect a strong correlation based on the overall profile.
 
 2. Each university recommendation must be **clearly and attractively formatted** in a human-readable layout, using **bold section headers** and organized details. Your response should not contain any JSON, code, or raw data structures — only elegant, well-structured descriptive text.
 
@@ -58,13 +58,13 @@ For each university, include the following information with bold labels:
 **🏫 University Name:** Full name along with classification (Public/Private)  
 **📍 Location:** City and State  
 **⭐ Ranking:** National or Global ranking (if notable)  
-**🎓 Top Relevant Programs:** List of 3 programs aligned with the student’s interests  
+**🎓 Top Relevant Programs:** List of 3 programs aligned with the student's interests  
 **📊 Admission Rate:** Percentage of students accepted  
 **📈 Average Test Scores:** SAT, ACT, or GPA expectations (if available)  
 **📅 Application Deadlines:** Mention both Regular and Early deadlines (if applicable)  
 **🔗 Website:** Official university website  
 **📞 Contact Information:** Phone and email address of the admissions office  
-**💡 Why This is a Good Match:** A few bullet points explaining how the university aligns with the student’s profile — such as strong research in relevant fields, cultural fit, funding opportunities, or extracurricular match
+**💡 Why This is a Good Match:** A few bullet points explaining how the university aligns with the student's profile — such as strong research in relevant fields, cultural fit, funding opportunities, or extracurricular match
 
 ✅ Format all sections with good spacing, clear line breaks, and clean presentation.  
  ❌ Do **not** use JSON, tables, code formatting, or technical syntax. This should feel like a friendly, professional university advisor report.
@@ -88,19 +88,20 @@ model = genai.GenerativeModel(
     },
 )
 
-# Database Connection Helper
+# Database Connection Helper - UPDATED FOR XAMPP
 def get_db_connection():
     try:
         db = mysql.connector.connect(
-            host=os.getenv('DB_HOST', '127.0.0.1'),
-            port=int(os.getenv('DB_PORT', 3306)),
+            host=os.getenv('DB_HOST', 'localhost'),
+            port=int(os.getenv('DB_PORT', '3307')),
             user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', '1234'),
+            password=os.getenv('DB_PASSWORD', ''),
             database=os.getenv('DB_NAME', 'edupath_auth')
         )
+        print("✅ Database connection established")  # Added connection confirmation
         return db
     except mysql.connector.Error as err:
-        print(f"Database connection error: {err}")
+        print(f"❌ Database connection error: {err}")
         return None
 
 def translate_text(text, dest_lang='en'):
