@@ -1,59 +1,34 @@
-step1-Extract Zip file and open in VS Code or any compiler
-step2-https://www.youtube.com/watch?v=qNi4s459_S8&ab_channel=BeCoder
-step3-create tables inside MYSQL workbench after setup
+Follow this file 
 
-CREATE DATABASE edupath_auth;
+XAMPP SETUP Instructions
 
-USE edupath_auth;
-CREATE TABLE password_resets (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(100) NOT NULL,
-    token VARCHAR(255) NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,  -- No UNIQUE constraint
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-CREATE TABLE studentprofile (
-    student_id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    age INT NOT NULL CHECK (age BETWEEN 12 AND 100),
-    class VARCHAR(50) NOT NULL,
-    cgpa FLOAT CHECK (cgpa IS NULL OR (cgpa >= 0 AND cgpa <= 4.0)),
-    interest VARCHAR(100),
-    scholarshipneed BOOLEAN DEFAULT FALSE,
-    hobbies TEXT,
-    state VARCHAR(50) NOT NULL,
-    email VARCHAR(100) CHECK (email IS NULL OR email LIKE '%@%.%'),
-    phone VARCHAR(20),
-    preferred_location VARCHAR(100),
-    financial_status ENUM('low', 'middle', 'high', 'prefer_not_to_say') DEFAULT 'prefer_not_to_say',
-    parents_qualification ENUM('high_school', 'bachelor', 'master', 'phd', 'other') DEFAULT 'other',
-    english_proficiency ENUM('basic', 'intermediate', 'advanced', 'native') DEFAULT 'basic',
-    extra_curriculars TEXT,
-    career_goal TEXT,
-    preferred_study_type ENUM('on_campus', 'online', 'hybrid', 'no_preference') DEFAULT 'no_preference',
-    gmat_sat_score VARCHAR(50),
-    past_achievements TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+########################### STEPS ###############################3
+STEP1 : Download xhampp in your system
+
+https://www.youtube.com/watch?v=6WEhuHD184w&ab_channel=WebTechKnowledge
+           
+           if you see errors  follow these steps  actually it will be port errors otherwuse move step 2
+            step1.1: fix port errors
+
+                        https://youtu.be/EPNWxjriRuI?si=17BTyT9HruDw66aS
+
+                        if still xhamp mysql server not working then fix this error two 2
+            step1.2 if still error again copy your error paste in youtube follow any short video must give port 3307 
+                     if they add another port you fix it own if they are using 3307 then go with it 
+            
+        
+step2: create database  
+        its in URDU language you just follow steps leave language 
+        https://youtube.com/shorts/7QnU6dLQl5E?si=zl4uk0vwz7wj684L
+step3: now take tables file from code and paste in mysql query in xampp run all tables one by one to create dataase and table 
+
+step4: run code now
+        python server.py 
+step5:  go in browser paste that link of http:127.0.0.1:5000 as you know
 
 
-step4: 
 
-    open terminal in VScode
-    run command:   pip install -r requirements.txt
-    then
-        python server.py
-     you will see->  http://127.0.0.1:5000
-step5:
-    open browser like crome anyone  paste in search http://127.0.0.1:5000  press enter
 
-step6: 
-    now you can use your recomendation website
+follow these steps to run xampp 
+first start mysql 
+second start phpadmin
